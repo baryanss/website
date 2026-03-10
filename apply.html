@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Volunteer Application | YSP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 flex items-center justify-center min-h-screen p-6">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 border border-slate-200">
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Join the Movement</h2>
+        <p class="text-slate-500 mb-6">Fill out the details below to apply as a volunteer.</p>
+
+        <form id="volunteerForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold mb-1">Full Name</label>
+                <input type="text" id="fullName" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-orange-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Email Address</label>
+                <input type="email" id="email" required class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-orange-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Interested Program</label>
+                <select id="program" class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-orange-500 outline-none">
+                    <option value="">Select a Program</option>
+                    </select>
+            </div>
+            <button type="submit" class="w-full bg-orange-600 text-white py-3 rounded-xl font-bold hover:bg-orange-700 transition">Submit Application</button>
+        </form>
+        <p id="msg" class="mt-4 text-center hidden"></p>
+    </div>
+
+    <script>
+        const SB_URL = 'https://obtkwixkuycwwgmjmakm.supabase.co';
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idGt3aXhrdXljd3dnbWptYWttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTUyOTgsImV4cCI6MjA4ODYzMTI5OH0.amTJLOuoGRWmRp-QNZYmYgMZHzhEeC-1kqh8G8EBtds';
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        // Load programs into the dropdown
+        async function loadProgs() {
+            const { data } = await _supabase.from('programs').select('id, title');
+            const select = document.getElementById('program');
+            data?.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.title;
+                select.appendChild(opt);
+            });
+        }
+        loadProgs();
+
+        // Handle Submission
+        document.getElementById('volunteerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const msg = document.getElementById('msg');
+            btn.disabled = true;
+
+            const { error } = await _supabase.from('volunteers').insert([{
+                full_name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                assigned_program: document.getElementById('program').value || null
+            }]);
+
+            msg.classList.remove('hidden');
+            if (error) {
+                msg.textContent = "Error: " + error.message;
+                msg.className = "text-red-500 text-center mt-4";
+            } else {
+                msg.textContent = "Application sent successfully!";
+                msg.className = "text-green-600 text-center mt-4";
+                e.target.reset();
+            }
+            btn.disabled = false;
+        });
+    </script>
+</body>
+</html>

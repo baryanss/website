@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YSP | Chapter Management Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .glass-sidebar { background: #ffffff; border-right: 1px solid #e2e8f0; }
+        .admin-card { 
+            background: white; border-radius: 20px; border: 1px solid #e2e8f0; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .orange-btn { background: #FF6B00; transition: all 0.2s ease; }
+        .orange-btn:hover { background: #fa5a00; box-shadow: 0 8px 20px rgba(255, 107, 0, 0.2); }
+        .nav-link.active::before { content: ''; position: absolute; left: -24px; width: 4px; height: 20px; background: #FF6B00; border-radius: 0 4px 4px 0; }
+        [x-cloak] { display: none !important; }
+        .animate-fadeIn { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .edit-input { 
+            background: transparent;
+            border-bottom: 1px dashed #cbd5e1;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .edit-input:focus { border-bottom-style: solid; border-color: #FF6B00; }
+    </style>
+</head>
+<body x-data="chapterPanel()" x-init="init()" x-cloak>
+
+    <div class="flex min-h-screen">
+        <aside class="w-72 glass-sidebar fixed h-full z-50 p-6 flex flex-col">
+            <div class="flex items-center gap-3 mb-10 px-2">
+                <img src="ysp.jpg" alt="YSP Logo" class="w-10 h-10 object-contain rounded-lg">
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight leading-none" x-text="chapterName"></h1>
+                    <span class="text-[10px] text-orange-500 uppercase font-bold tracking-[0.2em]">Chapter Portal</span>
+                </div>
+            </div>
+
+            <nav class="space-y-1 flex-grow">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-2">Main</p>
+                <button @click="view = 'home'" :class="view === 'home' ? 'bg-orange-50 text-orange-600 active' : 'text-slate-500 hover:bg-slate-50'" class="nav-link w-full text-left px-4 py-3 rounded-xl font-semibold flex items-center gap-3 relative">
+                    🏠 Home
+                </button>
+
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-2 mt-6">Local Management</p>
+                <button @click="view = 'dashboard'" :class="view === 'dashboard' ? 'bg-orange-50 text-orange-600 active' : 'text-slate-500 hover:bg-slate-50'" class="nav-link w-full text-left px-4 py-3 rounded-xl font-semibold flex items-center gap-3 relative">
+                    📊 Chapter Stats
+                </button>
+                <button @click="view = 'events'" :class="view === 'events' ? 'bg-orange-50 text-orange-600 active' : 'text-slate-500 hover:bg-slate-50'" class="nav-link w-full text-left px-4 py-3 rounded-xl font-semibold flex items-center gap-3 relative">
+                    📅 Local Events
+                </button>
+                <button @click="view = 'volunteers'" :class="view === 'volunteers' ? 'bg-orange-50 text-orange-600 active' : 'text-slate-500 hover:bg-slate-50'" class="nav-link w-full text-left px-4 py-3 rounded-xl font-semibold flex items-center gap-3 relative">
+                    👥 Volunteers
+                </button>
+            </nav>
+
+            <div class="pt-6 border-t border-slate-100 space-y-3">
+                <div class="bg-slate-50 rounded-2xl p-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold" x-text="chapterName.charAt(0)"></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-800">Chapter Head</p>
+                        <p class="text-[10px] text-slate-400" x-text="chapterName"></p>
+                    </div>
+                </div>
+                
+                <button @click="logoutUser()" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 transition border border-transparent hover:border-red-100">
+                    Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-grow ml-72 p-12 max-w-7xl">
+            <header class="flex justify-between items-end mb-12">
+                <div>
+                    <nav class="flex text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        <span x-text="chapterName"></span> <span class="mx-2">/</span> <span class="text-orange-500" x-text="viewTitle()"></span>
+                    </nav>
+                    <h2 class="text-4xl font-bold tracking-tight text-slate-900" x-text="viewTitle()"></h2>
+                </div>
+                <button x-show="view === 'events'" @click="saveData()" class="orange-btn text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-orange-100 flex items-center gap-2">
+                    Sync to National
+                </button>
+            </header>
+
+            <section x-show="view === 'home'" class="animate-fadeIn">
+                <div class="admin-card p-12 bg-gradient-to-br from-white to-orange-50/30 overflow-hidden relative">
+                    <div class="relative z-10 grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <span class="bg-orange-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Active Session</span>
+                            <h3 class="text-5xl font-black text-slate-900 mt-6 mb-4">Welcome back!</h3>
+                            <p class="text-xl text-slate-600 leading-relaxed">
+                                You are leading the <span class="text-orange-600 font-bold" x-text="chapterName"></span>.
+                            </p>
+                        </div>
+                        <div class="flex justify-center">
+                            <div class="w-64 h-64 bg-slate-200 rounded-3xl flex items-center justify-center text-slate-400">Image Placeholder</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section x-show="view === 'dashboard'" class="animate-fadeIn space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="admin-card p-8">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Local Events</p>
+                        <div class="text-4xl font-bold text-slate-800" x-text="events.length"></div>
+                    </div>
+                    <div class="admin-card p-8">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Volunteers</p>
+                        <div class="text-4xl font-bold text-slate-800" x-text="volunteers.length"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section x-show="view === 'events'" class="animate-fadeIn space-y-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-bold text-slate-500 uppercase text-xs tracking-widest">Manage Chapter Activities</h3>
+                    <button @click="addEvent()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-black transition">+ New Event</button>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6">
+                    <template x-for="(event, index) in events" :key="index">
+                        <div class="admin-card p-6 flex gap-6 items-center border-l-4" :class="event.status === 'Published' ? 'border-l-emerald-500' : 'border-l-orange-500'">
+                            <div class="w-32 h-20 bg-slate-100 rounded-xl overflow-hidden shrink-0">
+                                <img :src="event.img" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-grow">
+                                <h4 class="font-bold text-lg" x-text="event.title || 'Untitled Event'"></h4>
+                                <p class="text-sm text-slate-500" x-text="event.location"></p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button @click="editEvent(index)" class="bg-slate-100 px-4 py-2 rounded-lg text-xs font-bold hover:bg-orange-500 hover:text-white transition">Edit</button>
+                                <button @click="events.splice(index, 1); saveData()" class="text-red-500 px-2 py-2 text-xs font-bold">Delete</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
+            <section x-show="view === 'volunteers'" class="animate-fadeIn">
+                <div class="admin-card overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-slate-400 text-[10px] uppercase font-bold tracking-widest">
+                            <tr>
+                                <th class="px-8 py-5">Name</th>
+                                <th class="px-8 py-5">Email</th>
+                                <th class="px-8 py-5">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <template x-for="vol in volunteers">
+                                <tr>
+                                    <td class="px-8 py-5 font-bold" x-text="vol.name"></td>
+                                    <td class="px-8 py-5 text-sm text-slate-500" x-text="vol.email"></td>
+                                    <td class="px-8 py-5"><span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-bold">Active</span></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div x-show="showEditModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]" x-cloak>
+        <div class="bg-white rounded-3xl p-8 max-w-2xl w-full mx-4">
+            <h3 class="text-2xl font-bold mb-6">Edit Event</h3>
+            <div class="space-y-4">
+                <input type="text" x-model="editingEvent.title" placeholder="Title" class="w-full p-3 border rounded-xl">
+                <textarea x-model="editingEvent.description" placeholder="Description" class="w-full p-3 border rounded-xl"></textarea>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="date" x-model="editingEvent.date" class="w-full p-3 border rounded-xl">
+                    <input type="text" x-model="editingEvent.location" placeholder="Venue" class="w-full p-3 border rounded-xl">
+                </div>
+            </div>
+            <div class="flex gap-4 mt-8">
+                <button @click="saveEditedEvent()" class="orange-btn text-white px-6 py-3 rounded-xl font-bold">Update</button>
+                <button @click="showEditModal = false" class="bg-slate-100 px-6 py-3 rounded-xl font-bold">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="showNotif" x-transition class="fixed bottom-10 right-10 bg-slate-900 text-white px-8 py-5 rounded-full shadow-2xl z-[100] font-bold" x-cloak>
+        ✓ Data Synchronized
+    </div>
+
+    <script>
+        function chapterPanel() {
+            return {
+                view: 'home',
+                chapterName: '',
+                showNotif: false,
+                events: [],
+                volunteers: [],
+                showEditModal: false,
+                editingEvent: {},
+                editingIndex: -1,
+
+                init() {
+                    // FIX: Check if data exists, if not, set defaults instead of redirecting immediately
+                    const role = localStorage.getItem('userRole');
+                    const chapter = localStorage.getItem('userChapter');
+
+                    if (!role || role !== 'chapter_head') {
+                        console.warn("No active chapter head session found. Setting debug mode.");
+                        this.chapterName = "Tagum City Chapter"; // Default for preview
+                    } else {
+                        this.chapterName = chapter;
+                    }
+
+                    const storageKey = `events_${this.chapterName.replace(/\s+/g, '_')}`;
+                    const saved = localStorage.getItem(storageKey);
+                    
+                    if (saved) {
+                        this.events = JSON.parse(saved);
+                    } else {
+                        this.events = [{ 
+                            title: 'Coastal Clean-up', 
+                            description: 'Community cleanup', 
+                            date: '2026-04-12', 
+                            location: 'Baywalk',
+                            status: 'Published',
+                            img: 'https://images.unsplash.com/photo-1618477461853-cf6ed80fbe52?w=400'
+                        }];
+                    }
+                    
+                    // Mock data for volunteers
+                    this.volunteers = [
+                        { name: "Alex Rivera", email: "alex@example.com" },
+                        { name: "Sarah Gen", email: "sarah@example.com" }
+                    ];
+                },
+
+                viewTitle() {
+                    const titles = { home: 'Overview', dashboard: 'Impact', events: 'Events', volunteers: 'Roster' };
+                    return titles[this.view];
+                },
+
+                addEvent() {
+                    const newEvent = { title: 'New Activity', description: '', date: '', location: '', status: 'Draft', img: 'https://via.placeholder.com/400' };
+                    this.events.unshift(newEvent);
+                    this.saveData();
+                },
+
+                editEvent(index) {
+                    this.editingEvent = { ...this.events[index] };
+                    this.editingIndex = index;
+                    this.showEditModal = true;
+                },
+
+                saveEditedEvent() {
+                    this.events[this.editingIndex] = { ...this.editingEvent };
+                    this.saveData();
+                    this.showEditModal = false;
+                },
+
+                saveData() {
+                    const storageKey = `events_${this.chapterName.replace(/\s+/g, '_')}`;
+                    localStorage.setItem(storageKey, JSON.stringify(this.events));
+                    this.showNotif = true;
+                    setTimeout(() => this.showNotif = false, 2000);
+                },
+
+                logoutUser() {
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YSP | Portal Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: radial-gradient(circle at top right, #fff5f0, #ffffff);
+            position: relative; 
+            overflow-x: hidden;
+        }
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, rgba(255, 107, 0, 0.1) 0%, rgba(255, 0, 0, 0.05) 100%);
+            filter: blur(80px);
+            border-radius: 50%;
+            z-index: -1;
+            animation: float 20s infinite alternate;
+        }
+        @keyframes float {
+            from { transform: translate(-10%, -10%) rotate(0deg); }
+            to { transform: translate(10%, 10%) rotate(10deg); }
+        }
+        .login-card { 
+            background: rgba(255, 255, 255, 0.8); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+            border-radius: 2rem; 
+        }
+        .custom-input {
+            transition: all 0.3s ease;
+            border: 1.5px solid #f3f4f6;
+        }
+        .custom-input:focus {
+            border-color: #ff6b00;
+            box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.1);
+        }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body x-data="{ role: 'member', loading: false }">
+    
+    <div class="blob" style="top: -10%; right: -10%;"></div>
+    <div class="blob" style="bottom: -10%; left: -10%; animation-delay: -5s;"></div>
+
+    <div class="w-full max-w-[440px] px-6 py-12">
+        <div class="text-center mb-8">
+            <div class="relative inline-block group">
+                <div class="absolute -inset-1 bg-gradient-to-tr from-orange-600 to-yellow-400 rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                <div class="relative w-20 h-20 bg-white rounded-[1.8rem] flex items-center justify-center p-3 shadow-sm border border-orange-50">
+                    <img src="ysp.jpg" alt="YSP Logo" class="w-full h-full object-contain">
+                </div>
+            </div>
+            <h1 class="text-3xl font-extrabold text-gray-900 mt-6 tracking-tight">Portal Access</h1>
+            <p class="text-gray-500 text-sm font-medium mt-1">Youth Service Philippines</p>
+        </div>
+
+        <div class="bg-gray-100/50 p-1.5 rounded-2xl flex mb-6 backdrop-blur-md border border-gray-200/50">
+            <button @click="role = 'member'" :class="role === 'member' ? 'bg-white shadow-md text-orange-600' : 'text-gray-500 hover:text-gray-700'" class="flex-1 py-3 rounded-xl text-[11px] font-bold transition-all uppercase tracking-wider">Member</button>
+            <button @click="role = 'chapter_head'" :class="role === 'chapter_head' ? 'bg-white shadow-md text-orange-600' : 'text-gray-500 hover:text-gray-700'" class="flex-1 py-3 rounded-xl text-[11px] font-bold transition-all uppercase tracking-wider">Chapter Head</button>
+            <button @click="role = 'admin'" :class="role === 'admin' ? 'bg-white shadow-md text-orange-600' : 'text-gray-500 hover:text-gray-700'" class="flex-1 py-3 rounded-xl text-[11px] font-bold transition-all uppercase tracking-wider">Admin</button>
+        </div>
+
+        <div class="login-card p-8 md:p-10">
+            <form @submit.prevent="handleAction">
+                <div class="mb-8">
+                    <h2 class="text-xl font-bold text-gray-900" 
+                        x-text="role === 'admin' ? 'Administrator Login' : (role === 'chapter_head' ? 'Chapter Head Setup' : 'Join the Community')"></h2>
+                    <p class="text-sm text-gray-500 mt-2 leading-relaxed" 
+                        x-text="role === 'admin' ? 'Enter your credentials to access the panel.' : 'Redirecting to our secure registration portal.'"></p>
+                </div>
+
+                <div x-show="role === 'admin'" x-cloak x-transition class="space-y-5 mb-8">
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                        <input id="email" type="email" placeholder="admin@ysp.ph" class="custom-input w-full mt-1.5 px-5 py-4 bg-white rounded-xl outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
+                        <input id="password" type="password" placeholder="••••••••" class="custom-input w-full mt-1.5 px-5 py-4 bg-white rounded-xl outline-none text-sm">
+                    </div>
+                </div>
+
+                <div x-show="role !== 'admin'" x-transition class="bg-orange-50/50 border border-orange-100 p-5 rounded-2xl mb-8">
+                    <div class="flex gap-3">
+                        <div class="shrink-0 w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-xs text-orange-800 font-semibold mb-0.5">External Link</p>
+                            <p class="text-[11px] text-orange-700/80 leading-normal">You will be redirected to the official registration form.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" :disabled="loading" 
+                    class="group relative w-full overflow-hidden bg-gray-900 text-white py-5 rounded-2xl font-bold transition-all hover:bg-black active:scale-[0.98]">
+                    <div class="relative z-10 flex items-center justify-center gap-2">
+                        <span x-show="!loading" x-text="role === 'admin' ? 'Sign In' : 'Continue'"></span>
+                        <svg x-show="loading" class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <svg x-show="!loading" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                    </div>
+                </button>
+            </form>
+        </div>
+
+        <p class="text-center text-gray-400 text-[11px] mt-8 font-medium">
+            &copy; 2026 Youth Service Philippines.
+        </p>
+    </div>
+
+    <script>
+    // Project: obtkwixkuycwwgmjmakm (Youth Service Philippines)
+    const supabaseUrl = 'https://obtkwixkuycwwgmjmakm.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idGt3aXhrdXljd3dnbWptYWttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTUyOTgsImV4cCI6MjA4ODYzMTI5OH0.amTJLOuoGRWmRp-QNZYmYgMZHzhEeC-1kqh8G8EBtds';
+    const _supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function handleAction() {
+        const data = Alpine.$data(document.body);
+        
+        // 1. External Form Redirects
+        if (data.role === 'member') {
+            window.location.href = 'https://docs.google.com/forms/d/e/1FAIpQLSdwMKgIjQNrlLH-j-Qdx0MrKxefxaLRC6gMI_oOgMTosDi_sQ/viewform';
+            return;
+        }
+
+        if (data.role === 'chapter_head') {
+            window.location.href = 'https://forms.gle/cWPsgBJKLaQoLuUr8?fbclid=IwY2xjawOKRLJleHRuA2FlbQIxMABicmlkETFJWDhJY0U1azBWMDFLOXh2c3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHm01_q8ZFNsR30YIkD2ODzju7eleolSNiJgUoZKW11PV7HAc0NeXszwCRjFU_aem_2mVtlAdu6_smAMkowigvAA';
+            return;
+        }
+
+        // 2. Admin Login Logic
+        data.loading = true;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            // Attempt Sign In
+            const { data: authData, error: authError } = await _supabase.auth.signInWithPassword({ 
+                email: email, 
+                password: password 
+            });
+
+            if (authError) throw authError;
+
+            // Check Role in 'profiles' table
+            const { data: profile, error: profileError } = await _supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', authData.user.id)
+                .single();
+
+            if (profileError || !profile || profile.role !== 'admin') {
+                // If login works but user isn't an admin in the database
+                await _supabase.auth.signOut();
+                throw new Error("Access Denied: You do not have Admin privileges.");
+            }
+
+            // Success: Redirect to Dashboard
+            window.location.href = 'admin.html';
+
+        } catch (err) {
+            // Handle common errors like "Email not confirmed" or "Invalid credentials"
+            alert("Login Failed: " + err.message);
+        } finally {
+            data.loading = false;
+        }
+    }
+</script>
+</body>
+</html>

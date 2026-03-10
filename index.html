@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Youth Service Philippines | Empowering the Future</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; margin: 0; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .orange-glow { box-shadow: 0 10px 30px rgba(255, 107, 0, 0.15); }
+        .gradient-text { background: linear-gradient(90deg, #FF6B00, #FFB347); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background-color: #ffffff; }
+        canvas { display: block; }
+        .hero-image-mask { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; overflow: hidden; }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .enhanced-shadow { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 10px 20px rgba(0, 0, 0, 0.05); }
+        .subtle-glow { box-shadow: 0 0 20px rgba(255, 107, 0, 0.1); }
+        .rounded-enhanced { border-radius: 2.5rem; }
+        .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15); }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="text-gray-900" x-data="yspApp()" x-init="init()" x-cloak>
+
+    <div id="canvas-container">
+        <canvas id="squaresCanvas"></canvas>
+    </div>
+
+    <nav class="fixed top-0 w-full z-50 glass border-b border-orange-100/50 shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold flex items-center gap-3 cursor-pointer hover-lift" @click="page = 'home'">
+                <img src="ysp.jpg" alt="YSP Logo" class="w-10 h-10 object-contain rounded-lg shadow-md shadow-orange-100">
+                <span class="tracking-tighter">YSP<span class="text-orange-500">PH</span></span>
+            </div>
+            
+            <div class="hidden md:flex space-x-8 font-medium text-sm uppercase tracking-widest">
+                <a @click="page = 'home'" class="hover:text-orange-500 cursor-pointer transition">Home</a>
+                <a @click="page = 'about'" class="hover:text-orange-500 cursor-pointer transition">About</a>
+                <a @click="page = 'programs'" class="hover:text-orange-500 cursor-pointer transition">Programs</a>
+                <a @click="page = 'membership'" class="hover:text-orange-500 cursor-pointer transition">Membership</a>
+                <a @click="page = 'volunteer'" class="hover:text-orange-500 cursor-pointer transition">Volunteer</a>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="window.location.href='login.html'" class="text-xs font-bold border border-orange-500 text-orange-500 px-5 py-2.5 rounded-full hover:bg-orange-50 transition subtle-glow">Login</button>
+                <button onclick="window.location.href='login.html'" class="text-xs font-bold bg-orange-500 text-white px-5 py-2.5 rounded-full hover:bg-orange-600 shadow-lg shadow-orange-200 transition">Admin</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-24 min-h-screen relative">
+
+        <template x-if="page === 'home'">
+            <section class="animate-fadeIn">
+                <div class="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h1 class="text-6xl md:text-7xl font-bold mb-6 leading-tight" x-html="home.headline"></h1>
+                        <p class="text-gray-500 max-w-lg text-lg mb-10 leading-relaxed" x-text="home.subhead"></p>
+                        <div class="flex gap-4">
+                            <button @click="page = 'membership'" class="bg-black text-white px-8 py-4 rounded-full font-bold hover:scale-105 transition enhanced-shadow">Join the Movement</button>
+                            <button @click="page = 'about'" class="glass border border-gray-200 px-8 py-4 rounded-full font-bold hover:bg-white transition subtle-glow">Our Story</button>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="hero-image-mask w-full h-[500px] shadow-2xl">
+                            <img src="https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&q=80&w=1000" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-orange-500 py-16 text-white shadow-2xl relative z-10">
+                    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+                        <div>
+                            <div class="text-5xl font-bold mb-2" x-text="stats.projects"></div>
+                            <div class="uppercase tracking-widest text-orange-100 text-xs font-semibold">Initiated Projects</div>
+                        </div>
+                        <div>
+                            <div class="text-5xl font-bold mb-2" x-text="chapters.length"></div>
+                            <div class="uppercase tracking-widest text-orange-100 text-xs font-semibold">Active Chapters</div>
+                        </div>
+                        <div>
+                            <div class="text-5xl font-bold mb-2" x-text="stats.members"></div>
+                            <div class="uppercase tracking-widest text-orange-100 text-xs font-semibold">Active Members</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </template>
+
+        <template x-if="page === 'about'">
+            <section class="max-w-7xl mx-auto px-6 py-16 animate-fadeIn">
+                <div class="grid md:grid-cols-2 gap-16 mb-20">
+                    <div>
+                        <h2 class="text-4xl font-bold mb-6">About <span class="text-orange-500">YSP</span></h2>
+                        <p class="text-gray-600 leading-relaxed mb-4">Youth Service Philippines (YSP) was born from the need for youth-centric initiatives. Initially comprising 10 high school students in 2016, YSP played a pivotal role in forming the Local Youth Development Council (LYDC) in Tagum City, Davao del Norte.</p>
+                        <p class="text-gray-600 leading-relaxed mb-8">Today, we are a non-stock, non-profit organization registered with the SEC and BIR, having initiated 200+ projects in education, peace, and disaster management across Luzon, Visayas, and Mindanao.</p>
+                        <div class="bg-orange-50 p-8 rounded-3xl border border-orange-100 mb-8 subtle-glow">
+                            <h3 class="font-bold text-xl text-orange-600 mb-2">Our Mission</h3>
+                            <p class="text-gray-700 italic">"Empowering young leaders to drive sustainable community development and forging inclusive partnerships for positive transformative change."</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="glass p-8 rounded-enhanced border border-white orange-glow mb-8 hover-lift">
+                            <h3 class="text-2xl font-bold mb-4">Our Vision</h3>
+                            <p class="text-gray-600">YSP actively fosters civic engagement, collaboration, and capacity building to drive community-led initiatives through bridging leadership and the values of <span class="font-bold">'pakikipag-kapwa'</span> and <span class="font-bold">'damayan'</span>.</p>
+                        </div>
+                        <h4 class="font-bold mb-6 uppercase text-xs tracking-widest text-gray-400">Our Advocacy Pillars</h4>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="flex gap-4 p-4 glass rounded-2xl border border-white hover-lift">
+                                <span class="font-bold text-orange-500">1.</span>
+                                <p class="text-sm"><strong>Global Citizenship & Governance:</strong> Promoting leadership and democratic values.</p>
+                            </div>
+                            <div class="flex gap-4 p-4 glass rounded-2xl border border-white hover-lift">
+                                <span class="font-bold text-orange-500">2.</span>
+                                <p class="text-sm"><strong>Ecological & Livelihood Sustainability:</strong> Protecting environments and supporting local economies.</p>
+                            </div>
+                            <div class="flex gap-4 p-4 glass rounded-2xl border border-white hover-lift">
+                                <span class="font-bold text-orange-500">3.</span>
+                                <p class="text-sm"><strong>Learning & Development:</strong> Enhancing educational opportunities and personal growth.</p>
+                            </div>
+                            <div class="flex gap-4 p-4 glass rounded-2xl border border-white hover-lift">
+                                <span class="font-bold text-orange-500">4.</span>
+                                <p class="text-sm"><strong>Humanitarian Service:</strong> Relief efforts and promoting dignity in crisis.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </template>
+
+        <template x-if="page === 'programs'">
+            <section class="max-w-7xl mx-auto px-6 py-12 animate-fadeIn">
+                <h2 class="text-5xl font-bold mb-12">Our <span class="text-orange-500">Impact</span></h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <template x-for="chapter in chapters">
+                        <div class="glass p-6 rounded-enhanced border border-white/60 shadow-lg hover:shadow-2xl transition-all cursor-pointer hover-lift" @click="selectedChapter = chapter; page = 'chapter-programs'">
+                            <img :src="chapter.img" class="w-full h-56 object-cover rounded-3xl mb-6 shadow-md">
+                            <h3 class="text-2xl font-bold mb-3" x-text="chapter.name"></h3>
+                            <p class="text-gray-500 text-sm mb-6 leading-relaxed" x-text="chapter.desc"></p>
+                            <span class="text-orange-500 font-bold text-sm bg-orange-50 px-4 py-2 rounded-full">View Programs</span>
+                        </div>
+                    </template>
+                </div>
+            </section>
+        </template>
+
+        <template x-if="page === 'chapter-programs'">
+            <section class="max-w-7xl mx-auto px-6 py-12 animate-fadeIn">
+                <button @click="page = 'programs'" class="mb-8 text-orange-500 font-bold flex items-center gap-2">← Back to Chapters</button>
+                <h2 class="text-5xl font-bold mb-12" x-text="selectedChapter.name + ' Programs'"></h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <template x-for="prog in selectedChapter.programs">
+                        <div class="glass p-6 rounded-enhanced border border-white/60 shadow-lg hover:shadow-2xl transition-all cursor-pointer hover-lift" @click="selectedProgram = prog; page = 'program-detail'">
+                            <img :src="prog.img" class="w-full h-56 object-cover rounded-3xl mb-6 shadow-md">
+                            <h3 class="text-2xl font-bold mb-3" x-text="prog.name"></h3>
+                            <p class="text-gray-500 text-sm mb-6 leading-relaxed" x-text="prog.desc"></p>
+                            <span class="text-orange-500 font-bold text-sm bg-orange-50 px-4 py-2 rounded-full">Explore Program</span>
+                        </div>
+                    </template>
+                </div>
+            </section>
+        </template>
+
+        <template x-if="page === 'program-detail'">
+            <section class="max-w-4xl mx-auto px-6 py-12 animate-fadeIn">
+                <button @click="page = 'chapter-programs'" class="mb-8 text-orange-500 font-bold flex items-center gap-2">← Back to Programs</button>
+                <div class="glass rounded-enhanced overflow-hidden border border-white shadow-2xl">
+                    <img :src="selectedProgram.img" class="w-full h-96 object-cover">
+                    <div class="p-12">
+                        <h2 class="text-4xl font-bold mb-6" x-text="selectedProgram.name"></h2>
+                        <p class="text-gray-600 text-lg leading-relaxed mb-8" x-text="selectedProgram.desc"></p>
+                        <div class="bg-orange-50 p-6 rounded-2xl border border-orange-100 subtle-glow">
+                            <h4 class="font-bold text-orange-600 mb-2">How to get involved:</h4>
+                            <p class="text-sm text-gray-500">This program is active in <span x-text="selectedChapter.name"></span>. Register as a member to start participating in these initiatives.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </template>
+
+        <template x-if="page === 'membership'">
+            <section class="max-w-4xl mx-auto px-6 py-12 animate-fadeIn text-center">
+                <h2 class="text-5xl font-bold mb-6">Join the <span class="text-orange-500">Movement</span></h2>
+                <p class="text-gray-500 text-lg mb-12 max-w-2xl mx-auto">Help us build a better Philippines. Register today to become an official member or establish a local chapter.</p>
+                <div class="flex flex-col gap-16">
+                    <div class="glass p-12 rounded-enhanced border border-white shadow-2xl relative overflow-hidden">
+                        <h3 class="text-2xl font-bold mb-4">Official Registration</h3>
+                        <p class="text-gray-600 mb-8">Click the link below to access our secure Google Form and complete your membership application.</p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdwMKgIjQNrlLH-j-Qdx0MrKxefxaLRC6gMI_oOgMTosDi_sQ/viewform" target="_blank" class="inline-block bg-orange-500 text-white px-12 py-5 rounded-2xl font-bold text-xl hover:bg-orange-600 hover:scale-105 transition enhanced-shadow">Open Google Form</a>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 text-left">
+                            <div class="p-4 bg-white/50 rounded-2xl text-xs subtle-glow">
+                                <h4 class="font-bold text-orange-500 mb-1 tracking-tighter uppercase">Step 1</h4>
+                                <p class="text-gray-500">Fill out the Google Form with your details.</p>
+                            </div>
+                            <div class="p-4 bg-white/50 rounded-2xl text-xs subtle-glow">
+                                <h4 class="font-bold text-orange-500 mb-1 tracking-tighter uppercase">Step 2</h4>
+                                <p class="text-gray-500">Connect with your local Chapter Lead.</p>
+                            </div>
+                            <div class="p-4 bg-white/50 rounded-2xl text-xs subtle-glow">
+                                <h4 class="font-bold text-orange-500 mb-1 tracking-tighter uppercase">Step 3</h4>
+                                <p class="text-gray-500">Start leading projects in your community.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass p-12 rounded-enhanced border border-white shadow-2xl relative overflow-hidden">
+                        <h3 class="text-2xl font-bold mb-4">Create a Chapter</h3>
+                        <p class="text-gray-600 mb-4">Passionate about bringing YSP to your local community? Apply to form an official chapter in your area.</p>
+                        <p class="text-sm font-semibold text-orange-600 mb-8 italic">You will be contacted by our team if your application is approved.</p>
+                        <a href="https://forms.gle/cWPsgBJKLaQoLuUr8?fbclid=IwY2xjawOKRLJleHRuA2FlbQIxMABicmlkETFJWDhJY0U1azBWMDFLOXh2c3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHm01_q8ZFNsR30YIkD2ODzju7eleolSNiJgUoZKW11PV7HAc0NeXszwCRjFU_aem_2mVtlAdu6_smAMkowigvAA" target="_blank" class="inline-block bg-black text-white px-12 py-5 rounded-2xl font-bold text-xl hover:bg-gray-800 hover:scale-105 transition enhanced-shadow">Apply to Create a Chapter</a>
+                        <div class="mt-16 text-left">
+                            <h4 class="font-bold text-xl mb-6 border-b border-orange-100 pb-2">Active Chapters</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="text-gray-400 uppercase text-[10px] tracking-widest">
+                                            <th class="py-3 px-4 text-left">Location</th>
+                                            <th class="py-3 px-4 text-left">Chapter Name</th>
+                                            <th class="py-3 px-4 text-right">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-50">
+                                        <template x-for="chapter in chapters">
+                                            <tr>
+                                                <td class="py-4 px-4 font-bold text-gray-700" x-text="chapter.location"></td>
+                                                <td class="py-4 px-4 text-gray-500" x-text="chapter.name"></td>
+                                                <td class="py-4 px-4 text-right"><span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-[10px] font-bold">ACTIVE</span></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </template>
+
+        <template x-if="page === 'volunteer'">
+            <section class="max-w-7xl mx-auto px-6 py-12 animate-fadeIn">
+                <div class="grid md:grid-cols-3 gap-12">
+                    <div class="md:col-span-1">
+                        <div class="sticky top-32">
+                            <h2 class="text-4xl font-bold mb-4">Open <span class="text-orange-500">Slots</span></h2>
+                            <p class="text-gray-500 mb-8">Ready to volunteer? Browse local events near you.</p>
+                            <img src="ysp.jpg" class="rounded-3xl shadow-xl">
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 space-y-6">
+                        <template x-for="chapter in chapters">
+                            <div class="glass border border-white p-8 rounded-enhanced flex flex-col md:flex-row justify-between items-center hover:shadow-xl transition shadow-sm hover-lift cursor-pointer" @click="selectedChapter = chapter; page = 'chapter-events'">
+                                <div>
+                                    <span class="inline-block bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase mb-3">Chapter</span>
+                                    <h3 class="text-2xl font-bold mb-1" x-text="chapter.name"></h3>
+                                    <p class="text-gray-500 text-sm"><span class="font-semibold text-gray-800" x-text="chapter.location"></span> • <span x-text="chapter.events.length + ' Events'"></span></p>
+                                </div>
+                                <div class="text-center md:text-right mt-4 md:mt-0">
+                                    <p class="text-xs text-gray-400 font-bold uppercase">Contact</p>
+                                    <p class="font-bold text-orange-500" x-text="chapter.contact"></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </section>
+        </template>
+
+        <template x-if="page === 'chapter-events'">
+            <section class="max-w-7xl mx-auto px-6 py-12 animate-fadeIn">
+                <button @click="page = 'volunteer'" class="mb-8 text-orange-500 font-bold flex items-center gap-2">← Back to Chapters</button>
+                <h2 class="text-5xl font-bold mb-12" x-text="selectedChapter.name + ' Events'"></h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <template x-for="event in selectedChapter.events">
+                        <div class="glass border border-white p-8 rounded-enhanced flex flex-col md:flex-row justify-between items-center hover:shadow-xl transition shadow-sm hover-lift cursor-pointer" @click="selectedEvent = event; page = 'event-detail'">
+                            <div>
+                                <span class="inline-block bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase mb-3" x-text="event.sdg"></span>
+                                <h3 class="text-2xl font-bold mb-1" x-text="event.name"></h3>
+                                <p class="text-gray-500 text-sm"><span class="font-semibold text-gray-800" x-text="selectedChapter.name"></span> • <span x-text="event.date"></span></p>
+                            </div>
+                            <div class="text-center md:text-right mt-4 md:mt-0">
+                                <p class="text-xs text-gray-400 font-bold uppercase">Contact</p>
+                                <p class="font-bold text-orange-500" x-text="event.contact"></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </section>
+        </template>
+
+        <template x-if="page === 'event-detail'">
+            <section class="max-w-4xl mx-auto px-6 py-12 animate-fadeIn">
+                <button @click="page = 'chapter-events'" class="mb-8 text-orange-500 font-bold flex items-center gap-2">← Back to Events</button>
+                <div class="glass rounded-enhanced overflow-hidden border border-white shadow-2xl">
+                    <img :src="selectedEvent.img" class="w-full h-96 object-cover">
+                    <div class="p-12">
+                        <h2 class="text-4xl font-bold mb-6" x-text="selectedEvent.name"></h2>
+                        <p class="text-gray-600 text-lg leading-relaxed mb-4"><strong>Date:</strong> <span x-text="selectedEvent.date"></span></p>
+                        <p class="text-gray-600 text-lg leading-relaxed mb-4"><strong>Chapter:</strong> <span x-text="selectedChapter.name"></span></p>
+                        <p class="text-gray-600 text-lg leading-relaxed mb-4"><strong>SDG Focus:</strong> <span x-text="selectedEvent.sdg"></span></p>
+                        <p class="text-gray-600 text-lg leading-relaxed mb-4"><strong>Contact:</strong> <span x-text="selectedEvent.contact"></span></p>
+                        <p class="text-gray-600 text-lg leading-relaxed mb-8" x-text="selectedEvent.details"></p>
+                        <div class="bg-orange-50 p-6 rounded-2xl border border-orange-100 subtle-glow">
+                            <h4 class="font-bold text-orange-600 mb-2">How to Join:</h4>
+                            <p class="text-sm text-gray-500">Contact the chapter lead or register as a member to participate in this event.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </template>
+
+    </main>
+
+    <footer class="glass border-t border-gray-100 py-16 mt-20 relative z-10">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <div class="text-2xl font-bold flex items-center gap-3 mb-4">
+                    <img src="ysp.jpg" alt="YSP Logo" class="w-8 h-8 object-contain rounded-md">
+                    <span class="tracking-tighter">YSP<span class="text-orange-500">PH</span></span>
+                </div>
+                <p class="text-gray-400 text-sm">Empowering Filipino youth through service since 2016.</p>
+            </div>
+            <div class="md:text-right text-gray-400 text-xs">
+                © 2026 Youth Service Philippines. Registered Non-Profit.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // SUPABASE CONFIG
+        const SB_URL = 'https://ylpzlrlpyrwplpsjynwm.supabase.co';
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlscHpscmxweXJ3cGxwc2p5bndtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NjkxMTksImV4cCI6MjA4ODU0NTExOX0.FX5KwEPHld_ErmED3MQ5I1C933RPqy5J3nIAmurx7ss';
+        const _supabase = window.supabase.createClient(SB_URL, SB_KEY);
+
+        function yspApp() {
+            return {
+                page: 'home',
+                selectedChapter: null,
+                selectedProgram: null,
+                selectedEvent: null,
+                home: { headline: 'Service Above <br><span class="gradient-text">Self.</span>', subhead: 'Born in Tagum City...' },
+                stats: { projects: 200, members: 1500 },
+                
+                // ORIGINAL FULL CHAPTER DATA
+                chapters: [
+                    {
+                        name: 'Tagum City Chapter',
+                        location: 'Tagum City',
+                        desc: 'The founding chapter of YSP, leading initiatives in Davao del Norte.',
+                        img: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=800',
+                        contact: 'Juan Dela Cruz',
+                        programs: [
+                            { name: 'Education for All', desc: 'Providing school supplies to remote areas.', img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800' },
+                            { name: 'Peace Building', desc: 'Conflict resolution workshops for youth.', img: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=800' }
+                        ],
+                        events: [
+                            { name: 'Coastal Clean-up', date: '2026-04-12', sdg: 'Life Below Water', contact: 'Juan Dela Cruz', img: 'https://images.unsplash.com/photo-1618477461853-cf6ed80fbe5e?auto=format&fit=crop&w=800', details: 'Join us as we clean the shores of Tagum.' }
+                        ]
+                    },
+                    {
+                        name: 'Manila Hub',
+                        location: 'Metro Manila',
+                        desc: 'Our central hub for policy advocacy and national partnerships.',
+                        img: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800',
+                        contact: 'Maria Santos',
+                        programs: [
+                            { name: 'Digital Literacy', desc: 'Teaching digital skills to rural youth.', img: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800' }
+                        ],
+                        events: [
+                            { name: 'Tech Workshop', date: '2026-05-20', sdg: 'Quality Education', contact: 'Maria Santos', img: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800', details: 'Basic coding and web design for youth.' }
+                        ]
+                    },
+                    {
+                        name: 'Iloilo Chapter',
+                        location: 'Iloilo',
+                        desc: 'Western Visayas chapter focusing on governance and sustainability.',
+                        img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800',
+                        contact: 'Pedro Garcia',
+                        programs: [
+                            { name: 'Governance Summit', desc: 'Empowering local youth leaders.', img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800' }
+                        ],
+                        events: [
+                            { name: 'Leadership Camp', date: '2026-06-15', sdg: 'Decent Work', contact: 'Pedro Garcia', img: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800', details: '3-day intensive leadership training.' }
+                        ]
+                    }
+                ],
+
+                async init() {
+                    initSquares();
+                    await this.loadSupabase();
+                },
+
+                async loadSupabase() {
+                    try {
+                        const { data: content } = await _supabase.from('site_content').select('*');
+                        content?.forEach(item => {
+                            if (item.id === 'home') this.home = item.data;
+                            if (item.id === 'stats') this.stats = item.data;
+                        });
+                    } catch (e) {
+                        console.error("Fetch error:", e);
+                    }
+                }
+            }
+        }
+
+        // ORIGINAL SQUARES ANIMATION
+        function initSquares() {
+            const canvas = document.getElementById('squaresCanvas');
+            const ctx = canvas.getContext('2d');
+            let squares = [];
+            
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Square {
+                constructor() {
+                    this.reset();
+                }
+                reset() {
+                    this.size = Math.random() * 20 + 10;
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.speed = Math.random() * 0.5 + 0.1;
+                    this.opacity = Math.random() * 0.1 + 0.02;
+                    this.rotation = Math.random() * Math.PI * 2;
+                }
+                update() {
+                    this.y -= this.speed;
+                    this.rotation += 0.002;
+                    if (this.y + this.size < 0) this.reset();
+                }
+                draw() {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation);
+                    ctx.fillStyle = `rgba(255, 107, 0, ${this.opacity})`;
+                    ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                    ctx.restore();
+                }
+            }
+
+            for(let i=0; i<30; i++) squares.push(new Square());
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                squares.forEach(s => { s.update(); s.draw(); });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>
