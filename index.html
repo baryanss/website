@@ -367,7 +367,7 @@
                         desc: 'Our central hub for policy advocacy and national partnerships.',
                         img: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800',
                         contact: 'Maria Santos',
-                        programs: [
+                        programs: [ 
                             { name: 'Digital Literacy', desc: 'Teaching digital skills to rural youth.', img: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800' }
                         ],
                         events: [
@@ -395,16 +395,16 @@
                 },
 
                 async loadSupabase() {
-                    try {
-                        const { data: content } = await _supabase.from('site_content').select('*');
-                        content?.forEach(item => {
-                            if (item.id === 'home') this.home = item.data;
-                            if (item.id === 'stats') this.stats = item.data;
-                        });
-                    } catch (e) {
-                        console.error("Fetch error:", e);
+                        try {
+                            const { data: content } = await _supabase.from('site_content').select('*');
+                            content?.forEach(item => {
+                                if (item.id === 'home') this.home = item.data;
+                                // if (item.id === 'stats') this.stats = item.data; <--- COMMENT THIS OUT
+                            });
+                        } catch (e) {
+                            console.error("Fetch error:", e);
+                        }
                     }
-                }
             }
         }
 
