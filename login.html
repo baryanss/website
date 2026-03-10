@@ -143,42 +143,42 @@
             return;
         }
 
-        // 2. Admin Login Logic
-        data.loading = true;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+                            // 2. Admin Login Logic
+                    data.loading = true;
+                    const emailInput = document.getElementById('email').value.trim();
+                    const passwordInput = document.getElementById('password').value;
 
-        try {
-            // Attempt Sign In
-            const { data: authData, error: authError } = await _supabase.auth.signInWithPassword({ 
-                email: email, 
-                password: password 
-            });
+                    if (!emailInput || !passwordInput) {
+                        alert("Please enter both email and password.");
+                        data.loading = false;
+                        return;
+                    }
 
-            if (authError) throw authError;
+                    try {
+                        const { data: authData, error: authError } = await _supabase.auth.signInWithPassword({ 
+                            email: emailInput, 
+                            password: passwordInput 
+                        });
 
-            // Check Role in 'profiles' table
-            const { data: profile, error: profileError } = await _supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', authData.user.id)
-                .single();
+                        if (authError) throw authError;
 
-            if (profileError || !profile || profile.role !== 'admin') {
-                // If login works but user isn't an admin in the database
-                await _supabase.auth.signOut();
-                throw new Error("Access Denied: You do not have Admin privileges.");
-            }
+                        const { data: profile, error: profileError } = await _supabase
+                            .from('profiles')
+                            .select('role')
+                            .eq('id', authData.user.id)
+                            .single();
 
-            // Success: Redirect to Dashboard
-            window.location.href = 'admin.html';
+                        if (profileError || !profile || profile.role !== 'admin') {
+                            await _supabase.auth.signOut();
+                            throw new Error("Access Denied: You do not have Admin privileges.");
+                        }
 
-        } catch (err) {
-            // Handle common errors like "Email not confirmed" or "Invalid credentials"
-            alert("Login Failed: " + err.message);
-        } finally {
-            data.loading = false;
-        }
+                        window.location.href = 'admin.html';
+                    } catch (err) {
+                        alert("Login Failed: " + err.message);
+                    } finally {
+                        data.loading = false;
+                    }
     }
 </script>
 </body>
